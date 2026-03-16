@@ -1,0 +1,18 @@
+eng/
+/eng*
+eng
+
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/ 
+
+# Ignore environment files
+.env
+venv/
+env/    
+.env*
