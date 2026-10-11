@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import URL
 import pandas as pd
 from pathlib import Path
@@ -44,6 +44,16 @@ engine = get_engine()
 
 def load_data_(table_name:str, df: pd.DataFrame):
     try:
+        # Existing news_data tables predate the image/content fields. Add them
+        # idempotently before pandas appends the transformed rows.
+        if table_name == "news_data" and inspect(engine).has_table(table_name, schema="public"):
+            with engine.begin() as connection:
+                connection.execute(text(
+                    "ALTER TABLE public.news_data "
+                    "ADD COLUMN IF NOT EXISTS image TEXT, "
+                    "ADD COLUMN IF NOT EXISTS content TEXT"
+                ))
+
         df.to_sql(
             name=table_name,
             con=engine,

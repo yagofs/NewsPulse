@@ -7,7 +7,9 @@ logging.basicConfig(level=logging.INFO)
 
 
 path_name = Path(__file__).parent.parent / 'data' / 'data.json'
-columns_to_drop = ['content', 'image']
+# Keep these fields in the transformed dataset so the portal can read them
+# from PostgreSQL. The load step adds the columns to existing tables when needed.
+columns_to_drop = []
 columns_name_to_rename = {
     'id': 'news_id',
     'title': 'news_title',

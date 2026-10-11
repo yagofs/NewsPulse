@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0f766e"><meta name="description" content="NewsPulse — Informação em movimento. Inteligência em tempo real.">
+  <title>NewsPulse — Portal de Notícias e Inteligência</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="#inicio" aria-label="NewsPulse, início"><span class="brand-mark">N<span>●</span></span><span>News<span class="brand-light">Pulse</span><small>INFORMAÇÃO EM MOVIMENTO</small></span></a>
+    <label class="global-search"><span>⌕</span><input id="globalSearch" placeholder="Buscar notícias, fontes e assuntos…" aria-label="Buscar notícias"><kbd>⌘ K</kbd></label>
+    <div class="top-actions"><span class="updated" id="updated">Atualizando…</span><button class="icon-button" id="refresh" title="Atualizar dados" aria-label="Atualizar dados">↻</button><button class="icon-button" id="theme" title="Alternar tema" aria-label="Alternar tema">◐</button><button class="menu-toggle" id="menuToggle" aria-label="Abrir navegação">☰</button></div>
+  </header>
+  <div class="shell"><aside class="sidebar" id="sidebar"><div class="nav-label">MENU PRINCIPAL</div><nav id="nav">
+    <a href="#inicio" data-page="inicio"><span>⌂</span>Início</a><a href="#explorar" data-page="explorar"><span>▤</span>Explorar notícias</a><a href="#tendencias" data-page="tendencias"><span>⌁</span>Tendências</a><a href="#categorias" data-page="categorias"><span>◫</span>Categorias</a><a href="#fontes" data-page="fontes"><span>◎</span>Fontes</a><a href="#analytics" data-page="analytics"><span>▥</span>Analytics</a>
+  </nav><div class="sidebar-bottom"><div class="live-dot"></div><div><b>Dados do pipeline</b><small>Sincronizados com o ETL</small></div></div><div class="sidebar-note">NewsPulse <span>v1.0</span><small>Uma leitura clara do que acontece.</small></div></aside>
+  <main id="main"><div class="loading"><i></i>Carregando notícias…</div></main></div>
+  <footer><a class="footer-brand" href="#inicio">NewsPulse</a><span>Portal de notícias e inteligência analítica</span><span>Origem: dados produzidos pelo pipeline ETL</span><span id="footerUpdated">—</span></footer>
+  <dialog id="articleDialog"></dialog><div class="toast" id="toast" role="status"></div>
+  <script src="/app.js" defer></script>
+</body></html>

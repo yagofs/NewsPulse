@@ -107,6 +107,22 @@ services:
       start_period: 5s
     restart: always
 
+  newspulse:
+    build: ./newspulse
+    ports:
+      - "127.0.0.1:4173:4173"
+    environment:
+      NEWSPULSE_BIND: 0.0.0.0
+      NEWSPULSE_DB_HOST: postgres
+      NEWSPULSE_DB_PORT: 5432
+      NEWSPULSE_DB_NAME: ${database:-airflow}
+      NEWSPULSE_DB_USER: ${user:-airflow}
+      NEWSPULSE_DB_PASSWORD: ${password:-airflow}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
   redis:
     # Redis is limited to 7.2-bookworm due to licencing change
     # https://redis.io/blog/redis-adopts-dual-source-available-licensing/

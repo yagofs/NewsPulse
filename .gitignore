@@ -1,18 +1,64 @@
-eng/
-/eng*
-eng
-
-# Ignore Python bytecode files
+# Python: bytecode, ambientes e caches
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Ignore Jupyter Notebook checkpoints
-.ipynb_checkpoints/ 
-
-# Ignore environment files
-.env
+*.py[cod]
+*$py.class
+.venv/
 venv/
-env/    
-.env*
+env/
+eng/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Arquivos locais de ambiente e segredos
+/.env
+/.env.*
+!/.env.example
+!/.env.*.example
+/config/.env
+/config/.env.*
+!/config/.env.example
+!/config/.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+simple_auth_manager_passwords.json.generated
+
+# Dependências e artefatos comuns de frontend
+node_modules/
+/newspulse/frontend/dist/
+/newspulse/frontend/build/
+.vite/
+.parcel-cache/
+
+# Logs e arquivos temporários
+/logs/
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Cache e arquivos do sistema/IDE
+.cache/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Volumes locais e cópias de segurança
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+*.backup
+*.dump
+*.sql.gz

@@ -1,11 +1,11 @@
 # News ETL Pipeline with Airflow
 
-Simple technical portfolio project to demonstrate an end-to-end Data Engineering workflow:
-extract data from an API, transform it with Pandas, and load it into PostgreSQL, orchestrated by Apache Airflow.
+Simple technical portfolio project to demonstrate an end-to-end Data Engineering workflow: extract data from an API, transform it with Pandas, and load it into PostgreSQL, orchestrated by Apache Airflow.
 
 ## Project Goal
 
 Build a small, production-style ETL pipeline that is:
+
 - easy to run locally
 - orchestrated with Airflow
 - connected to PostgreSQL
@@ -13,9 +13,9 @@ Build a small, production-style ETL pipeline that is:
 
 ## Architecture
 
-1. `extract`: fetches news data from GNews API and stores raw JSON in `data/data.json`
-2. `transform`: cleans and standardizes columns, converts timestamps to `America/Sao_Paulo`, writes parquet
-3. `load`: inserts transformed data into PostgreSQL table `news_data`
+- `extract`: fetches news data from GNews API and stores raw JSON in `data/data.json`
+- `transform`: cleans and standardizes columns, converts timestamps to `America/Sao_Paulo`, writes Parquet
+- `load`: inserts transformed data into PostgreSQL table `news_data`
 
 Airflow DAG: `dags/news_dag.py`  
 Core ETL modules: `src/extract_data.py`, `src/transform_data.py`, `src/load_data.py`
@@ -43,8 +43,12 @@ Core ETL modules: `src/extract_data.py`, `src/transform_data.py`, `src/load_data
 │   ├── data.json
 │   └── news_data.parquet
 ├── config/
-│   ├── .env
 │   └── airflow.cfg
+├── newspulse/
+│   ├── backend/server.py
+│   ├── backend/requirements.txt
+│   ├── Dockerfile
+│   └── frontend/
 ├── docker-compose.yaml
 ├── main.py
 └── requirements.txt
@@ -52,32 +56,19 @@ Core ETL modules: `src/extract_data.py`, `src/transform_data.py`, `src/load_data
 
 ## Environment Variables
 
-This project uses two `.env` files:
+The ETL reads its variables from `config/.env`. Docker Compose also uses this file when started with the commands below.
 
-1. Root `.env` (used by Docker Compose / Airflow containers)
-2. `config/.env` (used by ETL Python modules)
+Example `config/.env`:
 
-### Example: root `.env`
-
-```env
-AIRFLOW_UID=1000
-host=postgres
-database=airflow
-user=airflow
-password=airflow
-```
-
-### Example: `config/.env`
-
-```env
+```dotenv
 API=YOUR_GNEWS_API_KEY
 host=postgres
 database=airflow
-user=airflow
-password=airflow
+user=YOUR_POSTGRES_USER
+password=YOUR_POSTGRES_PASSWORD
 ```
 
-If running ETL outside Docker (local Python only), change `config/.env` database credentials to your local PostgreSQL instance.
+Keep real credentials private. For local Python execution, set `host` and the database credentials to a PostgreSQL instance accessible from your machine. The Docker Compose PostgreSQL service uses the database settings defined in `docker-compose.yaml`.
 
 ## Run Locally (without Airflow)
 
@@ -96,7 +87,7 @@ pip install -r requirements.txt
 
 ### 3. Configure `config/.env`
 
-Set your API key and database credentials.
+Set your GNews API key and PostgreSQL connection details.
 
 ### 4. Execute ETL
 
@@ -108,60 +99,63 @@ python main.py
 
 ### 1. Start services
 
+The Compose setup expects `config/.env` for its environment variables:
+
 ```bash
-docker compose up -d
+ENV_FILE_PATH=config/.env docker compose --env-file config/.env up -d
 ```
 
 ### 2. Open Airflow UI
 
-- URL: `http://localhost:8080`
-- Default credentials (from official compose template): `airflow` / `airflow`
+URL: <http://localhost:8080>
 
 ### 3. Enable and run DAG
 
-1. Unpause `news_dag`
-2. Trigger manually or wait for schedule (`0 0 */1 * *`)
+- Unpause `news_dag`.
+- Trigger it manually or wait for its daily schedule (`0 0 */1 * *`).
+
+## Access the NewsPulse Portal
+
+The portal reads from PostgreSQL table `public.news_data`; it does not call GNews or run the ETL itself. Start the database and portal from the repository root:
+
+```bash
+ENV_FILE_PATH=config/.env docker compose --env-file config/.env up -d --build newspulse
+```
+
+Open <http://localhost:4173>. The table must already contain ETL data for news to appear. If it has not been populated yet, start the full Compose environment and run `news_dag` in Airflow as described above. The portal API is read-only; its health endpoint is <http://localhost:4173/api/health>.
 
 ## Expected Output
 
 - Raw API payload: `data/data.json`
 - Transformed dataset: `data/news_data.parquet`
 - PostgreSQL table loaded: `news_data`
+- NewsPulse portal: <http://localhost:4173>
 
 ## Common Issues (Troubleshooting)
 
 ### 1. `ModuleNotFoundError: No module named 'extract_data'`
 
-Cause: `src` folder not mounted in Airflow container.  
-Fix: ensure compose volume maps `./src:/opt/airflow/src`.
+Cause: `src` folder is not mounted in the Airflow container.
+Fix: ensure Compose maps `./src:/opt/airflow/src`.
 
-### 2. DAG runs with success but no task instances
+### 2. PostgreSQL connection refused inside Airflow
 
-Cause: `start_date` set in the future.  
-Fix: set DAG `start_date` to a past date.
-
-### 3. `Permission denied` in `airflow-init` on Fedora
-
-Cause: SELinux context on mounted folders.  
-Fix: use `:z` suffix in Docker volume mounts and proper `AIRFLOW_UID`.
-
-### 4. PostgreSQL connection refused inside Airflow
-
-Cause: using `127.0.0.1` from inside container.  
+Cause: using `127.0.0.1` from inside a container.
 Fix: use `host=postgres` in `config/.env` when running with Docker Compose.
 
-### 5. `Ident authentication failed`
+### 3. Portal opens but shows no news or reports a database error
 
-Cause: PostgreSQL auth method configured as `ident/peer`.  
-Fix: update `pg_hba.conf` to `scram-sha-256` or `md5` for localhost host rules.
+Cause: `public.news_data` may not exist yet, may be empty, or the portal database credentials may not match the PostgreSQL service.
+Fix: confirm `config/.env` database settings, start the Compose services, then run `news_dag` in Airflow.
 
 ## Portfolio Notes
 
 This project demonstrates:
+
 - modular ETL design
 - Airflow DAG orchestration with TaskFlow API
 - practical Dockerized data platform setup
-- real-world debugging of environment, auth, import, and scheduling issues
+- a PostgreSQL-backed read-only news portal
 
 ## Next Improvements
 
@@ -170,4 +164,3 @@ This project demonstrates:
 - Add incremental load / dedup strategy
 - Add CI pipeline (lint + tests)
 - Add data quality checks as Airflow tasks
-
